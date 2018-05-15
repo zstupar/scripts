@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -o errexit
+#set -o xtrace
+
+get_title() {
+	wget -O - -q http://goalkicker.com/ | \
+		grep -oP '(?<=a href=").*Book(?=")'
+}
+
+get_filename() {
+	for title in $BOOK_TITLES; do
+		wget -O - -q http://goalkicker.com/$title/ | \
+			grep -oP '(?<=a href=").*pdf'
+	done
+}
+
+BOOK_TITLES=$(get_title)
+BOOK_FILENAMES=$(get_filename)
+
+TITLES_ARRAY=($BOOK_TITLES)
+FILENAMES_ARRAY=($BOOK_FILENAMES)
+
+for book in ${!TITLES_ARRAY[@]}; do
+	wget -t 2 http://goalkicker.com/${TITLES_ARRAY[book]}/${FILENAMES_ARRAY[book]}
+done
